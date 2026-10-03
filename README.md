@@ -6,7 +6,7 @@
 
 [English](README.en.md) · [场景规格](docs/scenes.md) · [题库](docs/questions.md)
 
-🔗 **在线试用**：<!-- 开启 GitHub Pages 后把地址填在这里 -->
+🔗 **在线试用**：<https://z55j43.github.io/self-intro-factory-/>
 
 ---
 

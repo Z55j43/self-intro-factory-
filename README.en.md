@@ -6,7 +6,7 @@
 
 [中文](README.md) · [Scenario specs](docs/scenes.md) · [Question bank](docs/questions.md)
 
-🔗 **Live demo**: <!-- paste the GitHub Pages URL here after enabling it -->
+🔗 **Live demo**: <https://z55j43.github.io/self-intro-factory-/>
 
 ---
 
