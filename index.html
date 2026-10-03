@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自我介绍工厂 · 先选场景，再答该答的题</title>
+<style>
+:root{
+  --paper:#f7f5f2; --card:#ffffff; --ink:#1c1917; --ink2:#57534e; --ink3:#a8a29e;
+  --line:#e7e5e4; --line2:#d6d3d1;
+  --accent:#b45309; --accent-soft:#fef6e7; --accent-line:#f0d9b5;
+  --g0:#0e7490; --g1:#b45309; --g2:#4d7c0f; --g3:#7e22ce; --g4:#be123c; --g5:#0369a1;
+  --radius:14px;
+  --shadow:0 1px 3px rgba(28,25,23,.06), 0 8px 24px -12px rgba(28,25,23,.14);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#171513; --card:#211e1c; --ink:#f5f3f0; --ink2:#b8b2ab; --ink3:#7d7772;
+    --line:#332f2c; --line2:#443f3b;
+    --accent:#f59e0b; --accent-soft:#2a2115; --accent-line:#4a3a1e;
+    --g0:#22d3ee; --g1:#fbbf24; --g2:#a3e635; --g3:#c084fc; --g4:#fb7185; --g5:#38bdf8;
+    --shadow:0 1px 3px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+  font-size:15px; line-height:1.7;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:900px;margin:0 auto;padding:0 20px 120px}
+header{padding:52px 0 26px;border-bottom:1px solid var(--line)}
+.kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:14px}
+h1{font-size:37px;line-height:1.15;font-weight:700;letter-spacing:-.02em}
+h1 small{display:block;font-size:14px;font-weight:400;color:var(--ink3);letter-spacing:.05em;margin-top:10px}
+.lede{margin-top:16px;color:var(--ink2);max-width:660px}
+.lede b{color:var(--ink);font-weight:600}
+
+/* ---------- 场景选择 ---------- */
+.picker{margin-top:40px}
+.picker h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:6px}
+.picker .hint{font-size:13px;color:var(--ink3);margin-bottom:18px}
+.scenes{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(max-width:640px){.scenes{grid-template-columns:1fr}}
+.scene{
+  text-align:left;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:15px 17px;cursor:pointer;transition:.18s;font:inherit;color:inherit;
+  box-shadow:var(--shadow);display:block;
+}
+.scene:hover{border-color:var(--ink3);transform:translateY(-1px)}
+.scene.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent),var(--shadow)}
+.scene .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.scene .nm{font-weight:600;font-size:15px}
+.scene .cnt{font-size:11.5px;color:var(--accent);font-weight:600;white-space:nowrap;background:var(--accent-soft);border:1px solid var(--accent-line);padding:2px 8px;border-radius:99px}
+.scene.on .cnt{background:var(--card)}
+.scene .meta{font-size:12px;color:var(--ink3);margin-top:5px;font-variant-numeric:tabular-nums}
+.scene .goal{font-size:12.5px;color:var(--ink2);margin-top:8px}
+.pkg-label{font-size:12px;color:var(--ink3);margin:22px 0 10px;letter-spacing:.06em}
+.scenes.pkg .scene{border-style:dashed}
+
+/* ---------- toolbar ---------- */
+.toolbar{
+  position:sticky;top:0;z-index:30;margin:26px -20px 0;padding:12px 20px;
+  background:var(--paper);background:color-mix(in srgb, var(--paper) 90%, transparent);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.toolbar[hidden]{display:none}
+.prog{flex:1;min-width:150px}
+.prog .txt{font-size:12px;color:var(--ink2);margin-bottom:6px;display:flex;justify-content:space-between;gap:14px}
+.prog .bar{height:4px;background:var(--line2);border-radius:99px;overflow:hidden}
+.prog .bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .35s cubic-bezier(.4,0,.2,1)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--line2);
+  background:var(--card);color:var(--ink2);padding:8px 14px;border-radius:99px;transition:.15s;white-space:nowrap}
+button:hover{border-color:var(--ink3);color:var(--ink)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+button.primary:hover{filter:brightness(1.08);color:#fff}
+@media (prefers-color-scheme: dark){button.primary{color:#20180a}}
+
+/* ---------- 场景说明条 ---------- */
+.scene-info{
+  margin-top:26px;padding:16px 20px;border-radius:var(--radius);
+  background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);
+}
+.scene-info .si-top{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap}
+.scene-info h3{font-size:17px;font-weight:600}
+.scene-info .si-spec{font-size:12.5px;color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums}
+.scene-info dl{margin-top:12px;font-size:13px;color:var(--ink2);display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
+.scene-info dt{color:var(--ink3);white-space:nowrap}
+.scene-info .tip{margin-top:12px;padding:9px 13px;background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:9px;font-size:12.5px;color:var(--ink2)}
+.scene-info .tip b{color:var(--ink)}
+
+/* ---------- 题目 ---------- */
+.qnote{margin:34px 0 -10px;font-size:12.5px;color:var(--ink3);padding:10px 14px;border-radius:9px;
+  background:var(--card);border:1px dashed var(--line2)}
+.qnote b{color:var(--ink2)}
+.group{margin-top:38px}
+.group-head{display:flex;align-items:baseline;gap:11px;margin-bottom:16px}
+.group-head .dot{width:8px;height:8px;border-radius:99px;flex:none;transform:translateY(-3px)}
+.group-head h4{font-size:15px;font-weight:600}
+.group-head span{font-size:11.5px;color:var(--ink3);letter-spacing:.07em;text-transform:uppercase}
+.q{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 19px 13px;margin-bottom:11px;box-shadow:var(--shadow);transition:border-color .2s}
+.q:focus-within{border-color:var(--accent-line)}
+.q-top{display:flex;gap:13px;align-items:flex-start}
+.q-num{font-size:12.5px;font-weight:700;color:var(--ink3);font-variant-numeric:tabular-nums;flex:none;width:22px;line-height:1.95}
+.q-body{flex:1;min-width:0}
+.q-zh{font-weight:500}
+.q-en{font-size:12.5px;color:var(--ink3);margin-top:3px;font-style:italic}
+textarea{font:inherit;font-size:14px;line-height:1.65;width:100%;margin-top:11px;border:1px solid var(--line);
+  background:transparent;color:var(--ink);border-radius:10px;padding:11px 13px;resize:vertical;min-height:58px;transition:.15s}
+textarea::placeholder{color:var(--ink3);opacity:.7}
+textarea:focus{outline:none;border-color:var(--accent);background:var(--accent-soft)}
+textarea[data-lang="en"]{font-size:13.5px}
+.en-toggle{background:none;border:none;color:var(--ink3);font-size:11.5px;padding:6px 0 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.en-toggle:hover{color:var(--accent)}
+.en-wrap{display:none}
+.en-wrap.open{display:block}
+
+/* ---------- 结果 ---------- */
+#result{margin-top:64px;display:none}
+#result.show{display:block;animation:rise .4s cubic-bezier(.2,.8,.3,1)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.res-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:12px}
+.res-head h2{font-size:23px;font-weight:700;letter-spacing:-.01em}
+.res-head .sub{font-size:12.5px;color:var(--ink3)}
+.tabs{display:flex;gap:6px;margin-top:22px}
+.tab{border:none;background:none;color:var(--ink3);padding:8px 2px;border-radius:0;border-bottom:2px solid transparent;font-weight:600;font-size:14px;cursor:pointer}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.pane{display:none;margin-top:20px}
+.pane.active{display:block}
+.paper{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:30px 33px;box-shadow:var(--shadow)}
+.paper p{margin-bottom:17px;font-size:15.5px;line-height:1.85}
+.paper p:last-child{margin-bottom:0}
+.paper p.zh{text-align:justify}
+.paper .empty{color:var(--ink3);font-style:italic}
+.meter{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;padding:13px 17px;border-radius:var(--radius);background:var(--card);border:1px solid var(--line);font-size:13px}
+.meter:empty{display:none}
+.meter .big{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.meter .unit{font-size:12px;color:var(--ink3)}
+.meter .verdict{flex:1;min-width:200px;color:var(--ink2)}
+.meter.ok .big{color:#15803d}
+.meter.over .big{color:#b91c1c}
+.meter.under .big{color:#b45309}
+@media (prefers-color-scheme: dark){
+  .meter.ok .big{color:#4ade80}.meter.over .big{color:#f87171}.meter.under .big{color:#fbbf24}
+}
+.warn{margin-top:14px;padding:11px 15px;border-radius:10px;font-size:12.5px;background:var(--accent-soft);border:1px solid var(--accent-line);color:var(--ink2)}
+.warn b{color:var(--ink)}
+.trim{margin-top:14px;padding:13px 16px;border-radius:10px;background:var(--card);border:1px dashed var(--line2)}
+.trim-head{font-size:12.5px;color:var(--ink2)}
+.trim-head b{color:var(--accent)}
+.trim-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--ink2);
+  background:var(--paper);border:1px solid var(--line);border-radius:99px;padding:4px 6px 4px 11px}
+.chip i{font-style:normal;font-size:11px;color:var(--accent);background:var(--accent-soft);
+  border:1px solid var(--accent-line);padding:1px 6px;border-radius:99px;white-space:nowrap}
+.chip .side{font-size:11px;color:var(--ink3);font-weight:400}
+.chip button{font-size:11px;padding:2px 9px}
+.trim-foot{margin-top:9px;font-size:12px;color:var(--ink3)}
+.res-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+footer{margin-top:76px;padding-top:22px;border-top:1px solid var(--line);color:var(--ink3);font-size:12.5px}
+footer p{margin-bottom:6px}
+.toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,80px);background:var(--ink);color:var(--paper);
+  padding:11px 22px;border-radius:99px;font-size:13px;font-weight:500;opacity:0;transition:.3s;pointer-events:none;z-index:99}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:600px){h1{font-size:28px}.paper{padding:21px 19px}header{padding:34px 0 20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Know Yourself · 自我介绍工厂</div>
+  <h1>先选场景，再答该答的题<small>Different rooms, different answers</small></h1>
+  <p class="lede">
+    同一份自我，在不同场合要说成不同的话。面试要答 <b>11 题</b>，破冰只要 <b>4 题</b>，报个名字只要 <b>2 题</b>——
+    <b>问题的数量、侧重、以及最后长成什么样，都由场景决定。</b>
+  </p>
+</header>
+
+<section class="picker">
+  <h2>Step 1 · 你要拿去干什么</h2>
+  <p class="hint">选一个，它会告诉你需要答几道题。</p>
+  <div class="scenes" id="scenes"></div>
+  <div class="pkg-label">不确定选哪个？用兜底套餐 ——</div>
+  <div class="scenes pkg" id="packages"></div>
+</section>
+
+<div class="toolbar" id="toolbar" hidden>
+  <div class="prog">
+    <div class="txt"><span id="progTxt">已答 0 / 0</span><span id="progPct">0%</span></div>
+    <div class="bar"><i id="progBar"></i></div>
+  </div>
+  <div class="btns">
+    <button id="btnGenerate" class="primary">生成自我介绍</button>
+    <button id="btnSample">载入示例</button>
+    <button id="btnClear">清空</button>
+  </div>
+</div>
+
+<main id="quiz"></main>
+
+<section id="result">
+  <div class="res-head">
+    <div>
+      <h2 id="resTitle">你的自我介绍</h2>
+      <div class="sub" id="resSub"></div>
+    </div>
+    <div class="btns">
+      <button id="btnCopyZH">复制中文</button>
+      <button id="btnCopyEN">复制英文</button>
+      <button id="btnPrompt">复制 AI 改写 Prompt</button>
+      <button id="btnDownload">下载 .md</button>
+    </div>
+  </div>
+  <div id="warnBox"></div>
+  <div id="trimBox"></div>
+  <div class="tabs">
+    <button class="tab active" data-pane="zh">中文版</button>
+    <button class="tab" data-pane="en">English</button>
+  </div>
+  <div class="pane active" id="pane-zh">
+    <div class="meter" id="meterZH"></div>
+    <div class="paper" id="outZH"></div>
+  </div>
+  <div class="pane" id="pane-en">
+    <div class="meter" id="meterEN"></div>
+    <div class="paper" id="outEN"></div>
+  </div>
+  <div class="res-actions"><button id="btnTop">回到场景</button></div>
+</section>
+
+<footer>
+  <p><b>关于这份草稿</b>：它是用模板把你自己的原话串起来的——不加料、不美化，所以你读到的每个判断都出自你本人。想让它读起来更像"讲出来的话"，用「复制 AI 改写 Prompt」走一遍。</p>
+  <p><b>隐私</b>：所有答案只存在你这台机器的浏览器本地存储里，不会上传到任何地方。答完记得下载 .md 备份。</p>
+  <p style="margin-top:12px;opacity:.7">字数换算按中文 220 字/分钟、英文 150 词/分钟的口播速度估算。</p>
+</footer>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════ 数据 ═══════════ */
+const GROUPS = [
+  {id:0, cn:'身份底座', en:'Base',       color:'var(--g0)', sub:'任何场合都要。60 秒能填完。'},
+  {id:1, cn:'记忆点',   en:'Hook',       color:'var(--g1)', sub:'让别人记住"你这个人"。'},
+  {id:2, cn:'能力',     en:'Capability', color:'var(--g2)', sub:'让别人知道"你能干什么"。'},
+  {id:3, cn:'来路',     en:'Story',      color:'var(--g3)', sub:'让别人相信你说的是真的。'},
+  {id:4, cn:'内核',     en:'Core',       color:'var(--g4)', sub:'别人看到你的价值观。'},
+  {id:5, cn:'去处',     en:'Ahead',      color:'var(--g5)', sub:'让别人知道你要去哪。'}
+];
+
+const QS = [
+  {g:0, zh:'你希望别人怎么称呼你？（真名、昵称、网名都行）', en:'What should people call you?'},
+  {g:0, zh:'用一句话说清你是谁——专业 / 职业 / 现在最主要的那个身份。', en:'Who are you, in one sentence — your major, job, or main role right now?'},
+  {g:0, zh:'你来自哪、现在在哪？（家乡 / 城市 / 学校或单位）', en:'Where are you from, and where are you now?'},
+  {g:0, zh:'此刻，你的大部分时间和精力投在哪？', en:'Where does most of your time and energy go right now?'},
+
+  {g:1, zh:'有什么小事你几乎每天都做，但很少有人知道？', en:'What small thing do you do almost every day that almost nobody knows about?'},
+  {g:1, zh:'如果没有人看见、也没有回报，你还是会去做，那是什么？', en:'What would you still do if there were no reward and no audience?'},
+  {g:1, zh:'别人最容易记住你的一个特点是什么？', en:'What is the one trait people remember most about you?'},
+  {g:1, zh:'空闲的时候，你最常做的事是什么？', en:'What do you most often do in your free time?'},
+
+  {g:2, zh:'别人遇到什么麻烦时，会第一个想到你？', en:'What kind of trouble makes people think of you first?'},
+  {g:2, zh:'面对一个完全陌生的问题，你的第一反应通常是什么？', en:'Facing a completely unfamiliar problem, what is your first instinct?'},
+  {g:2, zh:'你更像"想清楚再动手"，还是"先做起来再说"？举一个最近的例子。', en:'Are you a "think it through first" or a "just start and adjust" person? Give a recent example.'},
+  {g:2, zh:'什么情况下你最没耐心？诚实一点。', en:'When do you run out of patience fastest? Be honest.'},
+
+  {g:3, zh:'到目前为止，哪件事真正改变过你？', en:'What has genuinely changed you so far?'},
+  {g:3, zh:'你做过哪个"当时看着亏、后来发现赚了"的决定？', en:'What decision looked like a loss at the time but turned out to be a gain?'},
+  {g:3, zh:'你做过最有成就感的一件事是什么？当时拿到了什么结果？', en:'What are you most proud of having done — and what was the actual outcome?'},
+  {g:3, zh:'有没有一件事你一直没做成、但也没真正放下？', en:'Is there something you never finished but never really let go of?'},
+
+  {g:4, zh:'最近一次让你心里"咯噔"一下、觉得不平或不甘的事是什么？', en:'When did you last feel that jolt of unfairness or frustration?'},
+  {g:4, zh:'有什么事是你绝不打算妥协的？', en:'What is the one thing you refuse to compromise on?'},
+  {g:4, zh:'你羡慕过谁？具体是羡慕哪一点？', en:'Whom have you envied — and what exactly did you envy?'},
+  {g:4, zh:'什么样的关系让你觉得被滋养？什么样的让你觉得被消耗？', en:'What kind of relationships nourish you, and what kind drain you?'},
+
+  {g:5, zh:'三年之后，你希望自己身上多出什么、少掉什么？', en:'Three years from now, what do you want to have more of — and less of?'},
+  {g:5, zh:'你最想做成的一件事是什么？（不是"应该做"，是"想"）', en:'What is the one thing you most want to accomplish — not what you should, but what you want?'},
+  {g:5, zh:'如果这篇自我介绍最终只被一个人读到，你希望是谁？你想让 TA 读出什么？', en:'If only one person would ever read this, who should it be — and what do you want them to take away?'},
+  {g:5, zh:'你觉得三年后的自己，会怎么看现在的你？', en:'How do you think your future self would look at who you are today?'}
+];
+
+const SCENES = [
+  {id:'interview', cn:'求职面试', en:'Job Interview', dur:'1–3 分钟', zhRange:[300,600], enRange:[150,450],
+   goal:'证明你匹配这个岗位', audience:'面试官',
+   shape:'身份 → 经历与成果 → 能力 → 成长 → 三年后',
+   tone:'专业、克制，每句话都要有证据',
+   tip:'不流水账，少说生活琐事。面试官不关心你"参与过"，只关心你"交付了什么"——所以第 15 题一定要写出结果。',
+   pick:[1,2,3,9,10,11,13,14,15,16,21]},
+
+  {id:'contest', cn:'竞赛 / 答辩 / 竞选', en:'Contest & Election', dur:'1–2 分钟', zhRange:[220,440], enRange:[110,300],
+   goal:'说服评委和同学把票投给你', audience:'评委、老师、同学',
+   shape:'身份 → 成绩与成果 → 能力 → 我的原则 → 我要做什么',
+   tone:'有说服力，可以带一点信念感',
+   tip:'这是唯一适合说"我相信"的场景。但别念简历——只列奖项不说为什么，等于没讲。',
+   pick:[1,2,3,9,11,15,18,21,22]},
+
+  {id:'full', cn:'完整版套餐', en:'Full Package', dur:'约 1 分钟', zhRange:[200,260], enRange:[100,150],
+   goal:'通用兜底，一个版本应付多个场合', audience:'不定',
+   shape:'身份 → 能力 → 一件有结果的事 → 我在做的事',
+   tone:'得体、平衡',
+   tip:'不确定选哪个场景时的安全牌：覆盖口语考试、竞选、面试初面的公共部分。',
+   pick:[1,2,3,9,11,15,21,22]},
+
+  {id:'oral', cn:'英语口语考试', en:'Oral Exam', dur:'30 秒–1 分钟', zhRange:[100,200], enRange:[75,150],
+   goal:'展示语言水平（内容简单反而是加分项）', audience:'考官',
+   shape:'Name → School & Major → Hometown → Hobbies → One-sentence plan',
+   tone:'简单句、好背、词汇不要太难，不要长难句堆砌',
+   tip:'这是唯一一个英文版是主线、中文版反而是附赠的场景。考官在评你的流利度，不是在听你的故事，所以内容越清楚越好。',
+   pick:[1,2,3,6,8,22]},
+
+  {id:'team', cn:'小组 / 团队初见', en:'Team Intro', dur:'约 30 秒', zhRange:[100,130], enRange:[50,70],
+   goal:'让队友立刻知道你能担哪块', audience:'队里的人',
+   shape:'称呼 → 身份 → 擅长什么 → 做事风格 → 我的边界',
+   tone:'务实，直接谈分工',
+   tip:'第 12 题（最没耐心的时候）在这里是关键——协作里最贵的成本是"不知道对方受不了什么"。主动说边界，比说自己多能干更让人放心。',
+   pick:[1,2,3,9,11,12]},
+
+  {id:'class', cn:'班会 / 开学第一课', en:'Class Intro', dur:'20–40 秒', zhRange:[74,148], enRange:[50,100],
+   goal:'让同学记住你、觉得你好相处', audience:'同学',
+   shape:'称呼 → 家乡学校 → 身份 → 兴趣 → 一个性格特点',
+   tone:'轻松友好，不要展示能力',
+   tip:'这个场合炫能力会掉好感。让人记住"你这个人"，不是"你的履历"。',
+   pick:[1,2,3,5,7,8]},
+
+  {id:'quick', cn:'万能精简版套餐', en:'Quick Package', dur:'约 20 秒', zhRange:[70,90], enRange:[35,50],
+   goal:'不确定场合时的最短安全版', audience:'不定',
+   shape:'称呼 → 家乡 → 身份 → 特点 → 兴趣',
+   tone:'轻松、干净',
+   tip:'班会、社团、小队通用的兜底版本。短到不会出错。',
+   pick:[1,2,3,7,8]},
+
+  {id:'social', cn:'社交破冰 / 聚会', en:'Casual Meetup', dur:'10–20 秒', zhRange:[35,74], enRange:[25,50],
+   goal:'破冰，交个朋友', audience:'刚认识的人',
+   shape:'名字 → 身份（一句带过）→ 兴趣 → 一个钩子',
+   tone:'轻松随意，可以带一点小幽默',
+   tip:'千万别报履历。第 5 题（每天都会做的小事）是你唯一的钩子，要用好——它比"我喜欢看电影"有用一百倍。',
+   pick:[1,2,5,8]},
+
+  {id:'group', cn:'线上社群报到', en:'Online Group', dur:'10–15 秒', zhRange:[30,55], enRange:[15,35],
+   goal:'告诉群里的人你是谁、来干什么', audience:'群里的人',
+   shape:'称呼 + 身份 + 来意',
+   tone:'一句到底，不寒暄',
+   tip:'群介绍不是演讲。一句说完，别人反而会记住。',
+   pick:[1,2,8]},
+
+  {id:'minimal', cn:'极简报名字', en:'Name Only', dur:'5–10 秒', zhRange:[15,35], enRange:[8,20],
+   goal:'仅告知身份，不需要额外信息', audience:'临时组队的人',
+   shape:'名字 +（必要时）身份',
+   tone:'干脆，零装饰',
+   tip:'临时开会、线上会议开场、临时组队。只报名字就够了——除非被要求，不额外多说。',
+   pick:[1,2]}
+];
+
+const PKG = ['full','quick'];
+
+/* ═══════════ 状态 ═══════════ */
+const KEY = 'selfintro.v2';
+let state = { scene:null, zh:{}, en:{}, keep:[] };
+
+/* ═══════════ 场景卡渲染 ═══════════ */
+function sceneCard(s){
+  return `<button class="scene" data-id="${s.id}">
+    <span class="top"><span class="nm">${s.cn}</span><span class="cnt">答 ${s.pick.length} 题</span></span>
+    <span class="meta">${s.dur} · ${s.zhRange[0]}–${s.zhRange[1]} 字</span>
+    <span class="goal">${s.goal}</span>
+  </button>`;
+}
+document.getElementById('scenes').innerHTML =
+  SCENES.filter(s => !PKG.includes(s.id)).map(sceneCard).join('');
+document.getElementById('packages').innerHTML =
+  SCENES.filter(s => PKG.includes(s.id)).map(sceneCard).join('');
+
+/* ═══════════ 题目渲染 ═══════════ */
+const quiz = document.getElementById('quiz');
+const toolbar = document.getElementById('toolbar');
+
+function renderQuiz(){
+  const s = getScene();
+  if(!s){
+    quiz.innerHTML = `<p style="margin-top:44px;color:var(--ink3);font-size:14px">↑ 先在上面选一个场景。</p>`;
+    toolbar.hidden = true;
+    return;
+  }
+  toolbar.hidden = false;
+
+  const gi = document.getElementById('scene-info');
+  if(gi) gi.remove();
+  const info = document.createElement('div');
+  info.className = 'scene-info'; info.id = 'scene-info';
+  info.innerHTML = `
+    <div class="si-top">
+      <h3>${s.cn} <span style="font-weight:400;color:var(--ink3);font-size:13px">${s.en}</span></h3>
+      <span class="si-spec">${s.dur} · ${s.zhRange[0]}–${s.zhRange[1]} 字 · 答 ${s.pick.length} 题</span>
+    </div>
+    <dl>
+      <dt>受众</dt><dd>${s.audience}</dd>
+      <dt>目标</dt><dd>${s.goal}</dd>
+      <dt>结构</dt><dd>${s.shape}</dd>
+      <dt>语气</dt><dd>${s.tone}</dd>
+    </dl>
+    <div class="tip"><b>避雷</b> ${s.tip}</div>`;
+  toolbar.insertAdjacentElement('afterend', info);
+
+  // 按组渲染被选中的题
+  const picked = s.pick.slice().sort((a,b) => a-b);
+  let html = '', cur = -1;
+  picked.forEach(n => {
+    const q = QS[n-1];
+    if(q.g !== cur){
+      if(cur !== -1) html += '';
+      cur = q.g;
+      html += `<section class="group">
+        <div class="group-head">
+          <span class="dot" style="background:${GROUPS[cur].color}"></span>
+          <h4>${GROUPS[cur].cn}</h4><span>${GROUPS[cur].en}</span>
+        </div>`;
+    }
+    html += `<div class="q">
+      <div class="q-top">
+        <div class="q-num">${String(n).padStart(2,'0')}</div>
+        <div class="q-body">
+          <div class="q-zh">${q.zh}</div>
+          <div class="q-en">${q.en}</div>
+          <textarea data-i="${n}" data-lang="zh" rows="2" placeholder="第一反应，直接写…"></textarea>
+          <button class="en-toggle" data-en="${n}">＋ 顺手写一句英文（留空就交给 AI 翻译）</button>
+          <div class="en-wrap" id="enwrap-${n}">
+            <textarea data-i="${n}" data-lang="en" rows="2" placeholder="English answer (optional)"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+  quiz.innerHTML = `<p class="qnote">下面是「${s.cn}」需要的 <b>${s.pick.length}</b> 道题。题号对应 24 题总库，<b>跳号是正常的</b>——省略的都是这个场合不需要问的。</p>` + html;
+
+  // 回填
+  quiz.querySelectorAll('textarea').forEach(t => {
+    const i = t.dataset.i, lang = t.dataset.lang;
+    if(state[lang][i]) t.value = state[lang][i];
+    t.addEventListener('input', e => {
+      state[lang][i] = e.target.value; autoGrow(e.target); save(); progress();
+    });
+  });
+  quiz.querySelectorAll('.en-toggle').forEach(b => b.addEventListener('click', () => {
+    document.getElementById('enwrap-'+b.dataset.en).classList.toggle('open');
+  }));
+  quiz.querySelectorAll('.en-wrap').forEach(w => {
+    const inner = w.querySelector('textarea');
+    if(inner && inner.value) w.classList.add('open');
+  });
+  quiz.querySelectorAll('textarea').forEach(autoGrow);
+  progress();
+}
+
+function getScene(){ return SCENES.find(s => s.id === state.scene) || null; }
+
+/* ═══════════ 进度 / 存储 ═══════════ */
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY); if(!raw) return;
+    const o = JSON.parse(raw);
+    state.scene = o.scene || null;
+    state.zh = o.zh || {}; state.en = o.en || {}; state.keep = o.keep || [];
+  }catch(e){}
+}
+function progress(){
+  const s = getScene(); if(!s) return;
+  const done = s.pick.filter(n => (state.zh[n]||'').trim()).length;
+  document.getElementById('progTxt').textContent = `已答 ${done} / ${s.pick.length}`;
+  document.getElementById('progPct').textContent = Math.round(done/s.pick.length*100) + '%';
+  document.getElementById('progBar').style.width = (done/s.pick.length*100) + '%';
+}
+function autoGrow(el){ el.style.height='auto'; el.style.height = Math.max(58, el.scrollHeight+2)+'px'; }
+
+/* ═══════════ 生成 ═══════════ */
+const tidy = s => String(s||'').trim().replace(/\s*\n+\s*/g,' ')
+  .replace(/[。．.,，、；;：:！!？?]+$/,'').trim();
+// 清理拼接产生的空标点：空答案会留下 "，。" 之类的残渣
+const fix = s => String(s||'')
+  .replace(/，\s*。/g,'。').replace(/。\s*。/g,'。').replace(/，\s*，/g,'，')
+  .replace(/、\s*。/g,'。').replace(/：\s*。/g,'。')
+  .replace(/,\s*\./g,'.').replace(/\.\s*\./g,'.').replace(/,\s*,/g,',')
+  .replace(/[ \t]{2,}/g,' ').trim();
+const z = i => tidy(state.zh[i]);
+const e = i => tidy(state.en[i]);
+const j = (sep, arr) => arr.filter(Boolean).join(sep);
+
+/* 可裁剪取值：SKIP* = 整题跳过，SHORT* = 只取结论句。默认全空，行为与原来完全一致。
+   中英分开控制 —— 中英不是互译关系，各自守自己的时长预算。 */
+let SKIPZ = new Set(), SKIPE = new Set(), SHORTZ = new Set(), SHORTE = new Set();
+// 取一句话（第一个句末标点为止）——用来把"结论 + 举例"压成只剩结论
+function firstOf(s){
+  const t = String(s||'').trim();
+  if(!t) return '';
+  let cut = -1;
+  const i = t.search(/[。！？!?]/); if(i >= 0) cut = i;
+  const k = t.search(/\.(\s|$)/);  if(k >= 0 && (cut < 0 || k < cut)) cut = k;
+  return cut < 0 ? t : t.slice(0, cut+1).trim();
+}
+const canShort = s => { const t = String(s||'').trim(); return !!t && firstOf(t) !== t; };
+function Z(i){ const v = z(i); if(!v || SKIPZ.has(i)) return ''; return SHORTZ.has(i) ? firstOf(v) : v; }
+function E(i){ const v = e(i); if(!v || SKIPE.has(i)) return ''; return SHORTE.has(i) ? firstOf(v) : v; }
+
+const GEN = {
+  minimal: a => ({
+    zh:[j('，',[`大家好，我是${Z(1)}`, Z(2)?Z(2):'']) + '。'],
+    en:[j(', ', [`Hi, I'm ${E(1)}`, E(2)||'']) + '.']
+  }),
+
+  group: a => ({
+    zh:[j('。',[`大家好，我是${Z(1)}，${Z(2)}`, Z(8)?`平时喜欢${Z(8)}`:'']) + '。很高兴认识大家。'],
+    en:[j('. ',[`Hi everyone, I'm ${E(1)}, ${E(2)}`, E(8)?`I spend most of my free time on ${E(8)}`:'']) + '. Good to meet you all.']
+  }),
+
+  social: a => ({
+    zh:[
+      `大家好，我是${Z(1)}，${Z(2)}。` +
+      j('',[Z(8)?`平时${Z(8)}。`:'', Z(5)?`另外有个小习惯——${Z(5)}。`:'']) +
+      `很高兴认识大家。`
+    ],
+    en:[
+      `Hi, I'm ${E(1)} — ${E(2)}. ` +
+      j('',[E(8)?`In my free time I usually ${E(8)}. `:'', E(5)?`One small habit of mine: ${E(5)}. `:'']) +
+      `Nice to meet you all.`
+    ]
+  }),
+
+  quick: a => ({
+    zh:[
+      `大家好，我是${Z(1)}，来自${Z(3)}，${Z(2)}。` +
+      j('',[Z(8)?`平时喜欢${Z(8)}。`:'', Z(7)?`如果用一个词形容我，大概是「${Z(7)}」。`:'']) +
+      `很高兴认识大家。`
+    ],
+    en:[
+      `Hi, I'm ${E(1)}, from ${E(3)}, and I'm ${E(2)}. ` +
+      j('',[E(8)?`In my free time I enjoy ${E(8)}. `:'', E(7)?`If I had to describe myself in one word, it would be "${E(7)}". `:'']) +
+      `Good to meet you.`
+    ]
+  }),
+
+  class: a => ({
+    zh:[
+      `大家好，我是${Z(1)}，来自${Z(3)}，现在是${Z(2)}。` +
+      j('',[Z(8)?`平时喜欢${Z(8)}。`:'', Z(7)?`如果用一个词形容我，大概是「${Z(7)}」。`:'', Z(5)?`${Z(5)}。`:'']) +
+      `以后请多关照。`
+    ],
+    en:[
+      `Hi everyone, I'm ${E(1)}. I'm from ${E(3)}, and I'm ${E(2)}. ` +
+      j('',[E(8)?`In my free time I enjoy ${E(8)}. `:'', E(7)?`If I had to describe myself in one word, it would be "${E(7)}". `:'', E(5)?`${E(5)}. `:'']) +
+      `Looking forward to getting to know you all.`
+    ]
+  }),
+
+  team: a => ({
+    zh:[
+      j('',[
+        `大家好，我是${Z(1)}，${Z(2)}。`,
+        Z(9)?`我比较能顶上的是——${Z(9)}。`:'',
+        Z(11)?`做事的时候，${Z(11)}。`:'',
+        Z(12)?`另外提前说一句：我最没耐心的时候是${Z(12)}。真遇到了直接跟我讲就行。`:''
+      ]) + `希望能帮上忙。`
+    ],
+    en:[
+      j(' ',[
+        `Hi, I'm ${E(1)} — ${E(2)}.`,
+        E(9)?`The thing I'm most useful for: ${E(9)}.`:'',
+        E(11)?`${E(11)}.`:'',
+        E(12)?`One heads-up: I run out of patience fastest when ${E(12)}. Just tell me if it happens.`:''
+      ]) + ` Looking forward to working together.`
+    ]
+  }),
+
+  oral: a => ({
+    zh:[
+      `大家好，我是${Z(1)}。我来自${Z(3)}，现在是${Z(2)}。` +
+      j('',[Z(8)?`空闲的时候我喜欢${Z(8)}。`:'', Z(6)?`还有一件事，就算没有报酬、没有人看见我也会去做——${Z(6)}。`:'']) +
+      j('',[Z(22)?`以后我最想做成的事是${Z(22)}。`:''])
+    ],
+    en:[
+      `Hi, I'm ${E(1)}. I'm from ${E(3)}, and I'm ${E(2)}. ` +
+      j('',[E(8)?`In my free time, I like ${E(8)}. `:'', E(6)?`There is one thing I would still do even with no reward and no audience: ${E(6)}. `:'']) +
+      j('',[E(22)?`Looking ahead, the one thing I most want to do is ${E(22)}.`:''])
+    ]
+  }),
+
+  full: a => ({
+    zh:[
+      `大家好，我是${Z(1)}，来自${Z(3)}，${Z(2)}。`,
+      j('',[Z(9)?`我比较能顶上的是——${Z(9)}。`:'', Z(11)?`做事的时候，${Z(11)}。`:'']),
+      Z(15)?`有一件事我做得比较有成就感：${Z(15)}。`:'',
+      j('',[Z(21)?`三年之后，我希望${Z(21)}。`:'', Z(22)?`现在我最想做成的是：${Z(22)}。`:''])
+    ].filter(Boolean),
+    en:[
+      `Hi, I'm ${E(1)}, from ${E(3)}, and I'm ${E(2)}.`,
+      j(' ',[E(9)?`The thing I'm most useful for: ${E(9)}.`:'', E(11)?`${E(11)}.`:'']),
+      E(15)?`The thing I'm most proud of: ${E(15)}.`:'',
+      j(' ',[E(21)?`Three years from now, ${E(21)}.`:'', E(22)?`What I most want to do right now: ${E(22)}.`:''])
+    ].filter(Boolean)
+  }),
+
+  contest: a => ({
+    zh:[
+      `大家好，我是${Z(1)}，来自${Z(3)}，${Z(2)}。`,
+      j('',[Z(15)?`过去这段时间，我最拿得出手的一件事是——${Z(15)}。`:'', Z(9)?`在团队里，别人遇到相关的问题时常常会来找我：${Z(9)}。`:'']),
+      j('',[Z(11)?`做事的时候，${Z(11)}。`:'', Z(18)?`有一条线我不打算退让——${Z(18)}。`:'']),
+      j('',[Z(21)?`三年之后，我希望${Z(21)}。`:'', Z(22)?`而我现在最想做成的一件事是：${Z(22)}。`:'']),
+      `希望有机会和大家一起把它做出来。`
+    ].filter(Boolean),
+    en:[
+      `Hi, I'm ${E(1)}, from ${E(3)}, and I'm ${E(2)}.`,
+      j(' ',[E(15)?`The thing I'm most proud of: ${E(15)}.`:'', E(9)?`In a team, people come to me when ${E(9)}.`:'']),
+      j(' ',[E(11)?`${E(11)}.`:'', E(18)?`There's one line I won't cross: ${E(18)}.`:'']),
+      j(' ',[E(21)?`Three years from now, ${E(21)}.`:'', E(22)?`And the one thing I most want to do is ${E(22)}.`:'']),
+      `I'd love the chance to build it together with you.`
+    ].filter(Boolean)
+  }),
+
+  interview: a => ({
+    zh:[
+      `我是${Z(1)}，来自${Z(3)}，${Z(2)}。`,
+      j('',[Z(15)?`先说一件我做得最有成就感的事：${Z(15)}。`:'', Z(14)?`更早的时候，我做过一个当时看着亏、后来发现赚了的决定——${Z(14)}。`:'']),
+      j('',[Z(9)?`在团队里，别人遇到相关的问题时常常会来找我，因为${Z(9)}。`:'', Z(10)?`面对完全陌生的问题，我的第一反应是${Z(10)}。`:'', Z(11)?`做事的时候，${Z(11)}。`:'']),
+      j('',[Z(13)?`真正改变过我的，是${Z(13)}。`:'', Z(16)?`我也有一件一直没做成、但没真正放下的事：${Z(16)}。`:'']),
+      Z(21)?`接下来三年，我希望${Z(21)}。`:''
+    ].filter(Boolean),
+    en:[
+      `I'm ${E(1)}, from ${E(3)}, and I'm ${E(2)}.`,
+      j(' ',[E(15)?`First, the thing I'm most proud of: ${E(15)}.`:'', E(14)?`Earlier on, I made a decision that looked like a loss at the time but turned out to be a gain — ${E(14)}.`:'']),
+      j(' ',[E(9)?`In a team, people come to me when ${E(9)}.`:'', E(10)?`Facing a completely unfamiliar problem, my first instinct is to ${E(10)}.`:'', E(11)?`${E(11)}.`:'']),
+      j(' ',[E(13)?`What genuinely changed me was ${E(13)}.`:'', E(16)?`I also have something I never finished and never really let go of: ${E(16)}.`:'']),
+      E(21)?`Over the next three years, ${E(21)}.`:''
+    ].filter(Boolean)
+  })
+};
+
+/* ═══════════ 按场景预算裁剪 ═══════════ */
+// 越小的越先被砍：1 点缀（小习惯 / 爱好 / 一个词）→ 2 附加信息（没耐心 / 旁支故事）
+// → 3 做事方式与价值观 → 4 主体叙事（能力 / 成果 / 目标）
+const TRIM_RANK = {5:1,7:1,8:1, 12:2,14:2,16:2, 6:3,10:3,11:3,19:3,20:3,23:3,24:3, 9:4,13:4,15:4,18:4,21:4,22:4};
+const NEVER = new Set([1,2,3]);   // 身份底座：任何场景都不动
+const rankOf = q => NEVER.has(q) ? 99 : (TRIM_RANK[q] || 3);
+
+function buildCur(sc){
+  const g = GEN[sc.id](state);
+  return { zh: g.zh.map(fix).filter(Boolean), en: g.en.map(fix).filter(Boolean) };
+}
+// 预算偏差：超上限重罚，低于下限轻罚。只用它当"这一步走不走得值"的判据。
+// 留 5%（至少 2 个单位）的容差 —— 可裁剪的最小单位是一整题，贴着边界时
+// 硬砍下去往往会把内容砍到远低于下限，那比略超还糟（口播宁可快一点）。
+function budgetPen(n, r){
+  const slack = Math.max(2, Math.round(r[1] * 0.05));
+  if(n > r[1] + slack) return (n - r[1]) / r[1];
+  if(n < r[0] - slack) return (r[0] - n) / r[0] * 0.6;
+  return 0;
+}
+/* 逐轮删减，但每一步都先试算再决定：
+   把 11 种"砍法"各试一遍，选让偏差最小的那一步；没有一步能改善就停手。
+   这样才不会为了压英文把中文砍到低于下限。 */
+function autoFit(sc, keep){
+  SKIPZ = new Set(); SKIPE = new Set(); SHORTZ = new Set(); SHORTE = new Set();
+  let out = buildCur(sc), guard = 0;
+  const zhLen = o => countZH(o.zh.join(''));
+  const enLen = o => countEN(o.en.join(' '));
+  const penOf = o => Math.max(budgetPen(zhLen(o), sc.zhRange), budgetPen(enLen(o), sc.enRange));
+  let pen = penOf(out);
+
+  while(pen > 1e-9 && guard++ < 40){
+    // 可选择的作用范围：谁超了谁才算候选；两边都超时也允许只动一边
+    const opts = [];
+    if(zhLen(out) > sc.zhRange[1]) opts.push(['z']);
+    if(enLen(out) > sc.enRange[1]) opts.push(['e']);
+    if(opts.length === 2) opts.push(['z','e']);
+    if(!opts.length) break;
+
+    const pool = sc.pick.filter(q => !NEVER.has(q) && !keep.has(q) && (z(q) || e(q)));
+    let move = null, bestPen = pen, bestLen = -1;
+
+    for(const q of pool){
+      for(const kind of ['short','skip']){
+        for(const sides of opts){
+          const snap = [new Set(SKIPZ), new Set(SKIPE), new Set(SHORTZ), new Set(SHORTE)];
+          let ok = true;
+          sides.forEach(s => {
+            const S = s === 'z' ? SHORTZ : SHORTE, K = s === 'z' ? SKIPZ : SKIPE, R = s === 'z' ? z : e;
+            if(kind === 'short'){
+              if(K.has(q) || S.has(q) || !canShort(R(q))){ ok = false; return; }
+              S.add(q);
+            } else {
+              if(K.has(q)){ ok = false; return; }
+              K.add(q);
+            }
+          });
+          if(ok){
+            const trial = buildCur(sc);
+            const tp = penOf(trial), tl = zhLen(trial) + enLen(trial);
+            // 偏差更小就换；一样小则保留内容更多（更长）的那一步
+            if(tp < bestPen - 1e-9 || (Math.abs(tp - bestPen) < 1e-9 && tl > bestLen)){
+              bestPen = tp; bestLen = tl; move = {q, kind, sides};
+            }
+          }
+          SKIPZ = snap[0]; SKIPE = snap[1]; SHORTZ = snap[2]; SHORTE = snap[3];
+        }
+      }
+    }
+    if(!move) break;
+    move.sides.forEach(s => {
+      const S = s === 'z' ? SHORTZ : SHORTE, K = s === 'z' ? SKIPZ : SKIPE;
+      if(move.kind === 'short'){ S.add(move.q); K.delete(move.q); }
+      else K.add(move.q);
+    });
+    out = buildCur(sc); pen = penOf(out);
+  }
+  return out;
+}
+const shortName = q => {
+  const t = String((QS[q-1] || {}).zh || '').replace(/[（(].*?[）)]/g,'').trim();
+  return t.length > 13 ? t.slice(0,13) + '…' : t;
+};
+function renderTrim(sc, keep){
+  const box = document.getElementById('trimBox');
+  const m = new Map();                                   // 按题号合并中英两侧的删减
+  const add = (q, side, kind) => {
+    const o = m.get(q) || {q, sides:new Set(), kinds:new Set()};
+    o.sides.add(side); o.kinds.add(kind); m.set(q, o);
+  };
+  SKIPZ.forEach(q => add(q, 'zh', '省略'));
+  SKIPE.forEach(q => add(q, 'en', '省略'));
+  SHORTZ.forEach(q => { if(!SKIPZ.has(q)) add(q, 'zh', '只留结论'); });
+  SHORTE.forEach(q => { if(!SKIPE.has(q)) add(q, 'en', '只留结论'); });
+  const items = Array.from(m.values()).sort((a,b) => a.q - b.q);
+  const restored = Array.from(keep).filter(q => sc.pick.includes(q)).sort((a,b) => a-b);
+  const over = [];                                       // 裁到极限仍略超的那一侧
+  if(countZH(cur.zh.join('')) > sc.zhRange[1]) over.push('中文');
+  if(countEN(cur.en.join(' ')) > sc.enRange[1]) over.push('英文');
+  if(!items.length && !restored.length && !over.length){ box.innerHTML = ''; return; }
+  let h = '<div class="trim">';
+  if(items.length){
+    h += `<div class="trim-head"><b>已自动删减 ${items.length} 处</b>，为了压进「${sc.dur} · ${sc.zhRange[0]}–${sc.zhRange[1]} 字」：</div>`;
+    h += '<div class="trim-list">' + items.map(it => {
+      const side = it.sides.size > 1 ? '中英' : (it.sides.has('zh') ? '仅中文' : '仅英文');
+      return `<span class="chip"><i>${Array.from(it.kinds).join(' / ')}</i>第 ${it.q} 题 · ${esc(shortName(it.q))}<b class="side">${side}</b><button data-keep="${it.q}">恢复</button></span>`;
+    }).join('') + '</div>';
+    h += '<div class="trim-foot">恢复是允许的——篇幅会超出目标，但内容更完整。自己权衡。</div>';
+  }
+  if(restored.length){
+    h += `<div class="trim-foot">已恢复：${restored.map(q => '第 ' + q + ' 题').join('、')}　<button id="btnUnkeep">全部重置</button></div>`;
+  }
+  if(over.length){
+    h += `<div class="trim-foot">${over.join(' / ')}仍略高于目标——再往下删就要动身份、能力、成果这些骨架了，那不如不删。想正好卡进区间，最快的办法是把某道题的答案写短一点。</div>`;
+  }
+  h += '</div>';
+  box.innerHTML = h;
+  box.querySelectorAll('[data-keep]').forEach(b => b.onclick = () => {
+    state.keep = Array.from(new Set([...(state.keep || []), +b.dataset.keep]));
+    save(); render();
+  });
+  const uk = document.getElementById('btnUnkeep');
+  if(uk) uk.onclick = () => { state.keep = []; save(); render(); };
+}
+
+/* ═══════════ 结果渲染 ═══════════ */
+let cur = {zh:[], en:[]};
+const ZH_SPEED = 220, EN_SPEED = 150;
+
+function countZH(str){ return str.replace(/\s/g,'').length; }
+function countEN(str){ return str.trim().split(/\s+/).filter(Boolean).length; }
+function secs(n, speed){ return n / speed * 60; }
+function fmtSec(s){
+  s = Math.round(s);
+  if(s < 60) return s + ' 秒';
+  return Math.floor(s/60) + ' 分 ' + (s%60) + ' 秒';
+}
+
+function render(){
+  const s = getScene();
+  if(!s) return;
+  const keep = new Set(state.keep || []);
+  const fitted = autoFit(s, keep);
+  cur.zh = fitted.zh;
+  cur.en = fitted.en;
+
+  document.getElementById('resTitle').textContent = `${s.cn} · 自我介绍`;
+  document.getElementById('resSub').textContent = `${s.dur} · 目标 ${s.zhRange[0]}–${s.zhRange[1]} 字 · ${s.audience}`;
+
+  document.getElementById('outZH').innerHTML = cur.zh.length
+    ? cur.zh.map(p => `<p class="zh">${esc(p)}</p>`).join('')
+    : `<p class="empty">还没答任何题。</p>`;
+  document.getElementById('outEN').innerHTML = cur.en.length
+    ? cur.en.map(p => `<p>${esc(p)}</p>`).join('')
+    : `<p class="empty">No English content yet — fill in the English boxes, or use "复制 AI 改写 Prompt".</p>`;
+
+  meter('meterZH', countZH(cur.zh.join('')), ZH_SPEED, s.zhRange, '中文', '字');
+  meter('meterEN', countEN(cur.en.join(' ')), EN_SPEED, s.enRange, 'English', 'words');
+
+  const answered = s.pick.filter(n => z(n)).length;
+  const missingEN = s.pick.filter(n => !e(n)).length;
+  let w = '';
+  if(answered === 0){
+    w = `<div class="warn"><b>还没答任何题。</b>这个场景需要 ${s.pick.length} 题，从第 1 题开始就行。</div>`;
+  } else if(answered < s.pick.length){
+    w = `<div class="warn">答了 ${answered} / ${s.pick.length} 题。剩下的空着也能生成，但草稿会缺掉对应段落。</div>`;
+  }
+  if(cur.zh.length && missingEN){
+    w += `<div class="warn"><b>英文版有 ${missingEN} 题空缺。</b>本地模板不翻译，只搬运。想要地道英文，点「复制 AI 改写 Prompt」交给大模型，或在英文框里补上。</div>`;
+  }
+  document.getElementById('warnBox').innerHTML = w;
+
+  renderTrim(s, keep);
+
+  document.getElementById('result').classList.add('show');
+  document.getElementById('result').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function meter(id, n, speed, range, lang, unit){
+  const el = document.getElementById(id);
+  if(!n){ el.className = 'meter'; el.innerHTML = ''; return; }
+  const sec = secs(n, speed);
+  let cls = 'ok', verdict = '';
+  if(n < range[0]) { cls = 'under'; verdict = `比目标短 ${range[0]-n} ${unit}，还能再讲一点。`; }
+  else if(n > range[1]) { cls = 'over'; verdict = `超出上限 ${n-range[1]} ${unit}，按这个速度念会超时，建议删掉一段。`; }
+  else { verdict = `落在目标区间内。`; }
+  el.className = 'meter ' + cls;
+  el.innerHTML = `<div><span class="big">${n}</span> <span class="unit">${unit}</span></div>
+    <div><span class="big" style="font-size:16px">${fmtSec(sec)}</span> <span class="unit">口播</span></div>
+    <div class="verdict">${lang} · 目标 ${range[0]}–${range[1]} ${unit} —— ${verdict}</div>`;
+}
+
+function esc(s){ return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+/* ═══════════ 复制 / 下载 ═══════════ */
+function toast(m){ const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 1800); }
+async function copy(text, label){
+  if(!text){ toast('还没内容'); return; }
+  try{ await navigator.clipboard.writeText(text); toast('已复制 · ' + label); }
+  catch(err){
+    const ta = document.createElement('textarea'); ta.value = text;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    toast('已复制 · ' + label);
+  }
+}
+
+function buildPrompt(){
+  const s = getScene(); if(!s) return '';
+  const L = [];
+  L.push(`你是一位擅长写人物特稿的作者。下面是我对一组自我认识问题的回答，请据此为我写一篇【${s.cn}】场合的自我介绍。`);
+  L.push('');
+  L.push('这个场合的规格：');
+  L.push(`- 受众：${s.audience}`);
+  L.push(`- 目标：${s.goal}`);
+  L.push(`- 时长：${s.dur}（中文 ${s.zhRange[0]}–${s.zhRange[1]} 字，英文 ${s.enRange[0]}–${s.enRange[1]} words）`);
+  L.push(`- 结构：${s.shape}`);
+  L.push(`- 语气：${s.tone}`);
+  L.push(`- 避雷：${s.tip}`);
+  L.push('');
+  L.push('写作要求：');
+  L.push(`1. 出两版：一篇中文、一篇英文。${s.id==='oral' ? '英文是主版本，请优先保证英文流畅地道；中文版作为参考。' : '英文不是直译，请按英文表达习惯重写，读起来要像母语者写的。'}`);
+  L.push(`2. 严格控制在上述字数区间内——这是要讲出口的，超时就废了。`);
+  L.push(`3. 保留我回答里的具体细节（人名、地点、事件、数字）。具体的东西才有说服力。`);
+  L.push('4. 不要堆形容词，不要鸡汤，不要"热爱生活、积极向上"这类空话。');
+  L.push('5. 严格基于我给出的信息，不要编造我没提到的事实。留空的题直接忽略。');
+  L.push('6. 不要加小标题，写成可以顺畅念出来的连贯段落。');
+  if(s.id==='interview') L.push('7. 面试版额外注意：每个能力主张后面都要有一个事实支撑。如果我的回答里缺结果数据，请标出来提醒我补。');
+  if(s.id==='class' || s.id==='social') L.push('7. 口语化，写得像说话，不像作文。可以有一点点幽默，但别刻意。');
+  L.push('');
+  L.push('以下是我的回答：');
+  L.push('');
+  s.pick.slice().sort((a,b)=>a-b).forEach(i => {
+    const a = z(i), b = e(i);
+    if(!a && !b) return;
+    L.push(`${i}. [${GROUPS[QS[i-1].g].cn}] ${QS[i-1].zh}`);
+    if(a) L.push(`   ${a}`);
+    if(b) L.push(`   EN: ${b}`);
+    L.push('');
+  });
+  return L.join('\n');
+}
+
+function buildMarkdown(){
+  const s = getScene(); if(!s) return '';
+  const d = new Date().toLocaleDateString('zh-CN');
+  let md = `# ${s.cn} · 自我介绍\n\n_场景：${s.cn}（${s.en}） · 时长 ${s.dur} · 目标 ${s.zhRange[0]}–${s.zhRange[1]} 字_\n\n_生成于 ${d}_\n\n---\n\n## 中文版\n\n`;
+  md += cur.zh.length ? cur.zh.join('\n\n') : '（未作答）';
+  md += `\n\n---\n\n## English\n\n`;
+  md += cur.en.length ? cur.en.join('\n\n') : '(no answer yet)';
+  md += `\n\n---\n\n## 本次采题（${s.pick.length} 题）\n\n`;
+  s.pick.slice().sort((a,b)=>a-b).forEach(i => {
+    const a = z(i), b = e(i);
+    if(!a && !b) return;
+    md += `**${i}. ${QS[i-1].zh}**\n\n${a || '—'}\n\n`;
+  });
+  const tk = [];
+  const sideTxt = (K, S, label) => {
+    const s1 = Array.from(K).sort((a,b)=>a-b).map(q => `${label}省略第 ${q} 题`);
+    const s2 = Array.from(S).filter(q => !K.has(q)).sort((a,b)=>a-b).map(q => `${label}第 ${q} 题只保留结论句`);
+    return s1.concat(s2);
+  };
+  tk.push(...sideTxt(SKIPZ, SHORTZ, ''), ...sideTxt(SKIPE, SHORTE, '英文'));
+  if(tk.length) md += `\n**篇幅处理**：为压进 ${s.zhRange[0]}–${s.zhRange[1]} 字，${tk.join('，')}。下面的原文是完整版。\n`;
+  md += `\n---\n\n_由「自我介绍工厂」生成 · 本地运行_\n`;
+  return md;
+}
+
+/* ═══════════ 示例 ═══════════ */
+const SAMPLE = {
+  zh:{
+    1:'周砚青，叫我砚青就行', 2:'独立接项目的品牌设计师',
+    3:'湖南长沙，现在在杭州',
+    4:'大部分时间在客户和工厂之间来回跑，把画在纸上的东西盯成真的能摸到的实物',
+    5:'开工前先手绘三张草图', 6:'把用过的每一块材料样板编号收起来，攒了六年，能摆满一整面墙',
+    7:'较真到「差一毫米也要推倒重来」', 8:'逛旧货市场和材料市场',
+    9:'东西做不出来、或者做出来跟图纸不一样的时候，他们知道我会一直磨下去',
+    10:'先上手把材料摸一遍，再动笔画',
+    11:'先做起来再说。接过一个从没做过的实木单子，边学榫卯边做，第一件报废，第二件成了',
+    12:'需求改了三轮，还是没人说清到底想要什么的时候',
+    13:'一整批柜子因为色差被全部退货的那天。那是我第一次明白，设计不是在图纸上就结束的',
+    14:'刚工作时接了一个几乎不赚钱的老家具修复活，在作坊里泡了三个月。后来我能进这一行，全靠那三个月',
+    15:'带三个人的小组把公司一条没人看好的边柜产品线做起来，第一年卖了两千一百多件，其中一款进了公司年度前三',
+    16:'做自己的一个家具系列，用回收来的老木头。想过很多次，一直没真正开始',
+    17:'看着客户的 logo 被工厂悄悄改简单，理由是"这样好生产"，而在场没有一个人觉得这是问题',
+    18:'自己不满意的东西绝不交出去', 19:'那种能把同一种设计语言从一把椅子一直做到一栋房子的人',
+    20:'能各自安静干活、偶尔抬头聊两句的关系最舒服；同一个决定要反复解释一遍又一遍的最消耗我',
+    21:'多出一点讲清"为什么"的耐心，少掉一点什么都自己扛',
+    22:'做一个自己的家具系列，用回收的老木头',
+    23:'我妈。她一直觉得我做设计就是"画画，不稳定"。我想让她读出来，我现在做的事是扎实的',
+    24:'大概会说我太慢了，但在作坊里泡的那几年没白费'
+  },
+  en:{
+    1:'Zhou Yanqing — Yanqing is fine', 2:'an independent brand designer',
+    3:'from Changsha, Hunan — based in Hangzhou now',
+    4:'running between clients and factories, making sure what I draw becomes something you can actually touch',
+    5:'sketching three things by hand before the day starts',
+    6:'numbering and keeping every material sample I have ever used — six years of them, enough to fill a whole wall',
+    7:'obsessive about detail — a millimetre off and I start over', 8:'flea markets and timber yards',
+    9:'when a piece won\'t come out right, or won\'t match the drawing — they know I\'ll keep grinding at it',
+    10:'I put my hands on the material first, then I draw',
+    11:'Just start and adjust. I took on a solid-wood commission I\'d never done and learned joinery while building it. The first piece was a write-off; the second worked',
+    12:'when the brief has changed three times and still nobody can say what they actually want',
+    13:'the day a whole batch of cabinets came back because the colour didn\'t match. That was when I understood design doesn\'t end on the drawing',
+    14:'taking a restoration job in my first year that barely paid anything, and spending three months in the workshop. That\'s how I got into this field',
+    15:'leading a team of three on a sideboard line nobody had faith in — over two thousand units in the first year, and one piece made the company\'s annual top three',
+    16:'a furniture series of my own, built from reclaimed old timber. I\'ve thought about it many times and never properly started',
+    17:'seeing a client\'s logo quietly simplified by a factory because it was "easier to produce" — and nobody in the room thought that was a problem',
+    18:'I don\'t hand over anything I\'m not happy with', 19:'people who can carry one design language from a single chair all the way to a building',
+    20:'what nourishes me is working quietly side by side and trading a sentence or two now and then. What drains me is justifying the same decision over and over',
+    21:'more patience for explaining the why, less of carrying everything myself',
+    22:'a furniture series of my own, made from old reclaimed timber',
+    23:'my mother. She has always seen design as "just drawing, not a real job". I want her to read this and see that what I do is solid',
+    24:'probably that I was too slow — but those years in the workshop weren\'t wasted'
+  }
+};
+
+/* ═══════════ 绑定 ═══════════ */
+document.querySelectorAll('.scene').forEach(b => b.addEventListener('click', () => {
+  state.scene = b.dataset.id;
+  document.querySelectorAll('.scene').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  document.getElementById('result').classList.remove('show');
+  save(); renderQuiz();
+  window.scrollTo({top: document.getElementById('toolbar').offsetTop - 10, behavior:'smooth'});
+}));
+
+document.getElementById('btnGenerate').onclick = render;
+document.getElementById('btnTop').onclick = () => window.scrollTo({top:0, behavior:'smooth'});
+document.getElementById('btnCopyZH').onclick = () => copy(cur.zh.join('\n\n'), '中文版');
+document.getElementById('btnCopyEN').onclick = () => copy(cur.en.join('\n\n'), 'English');
+document.getElementById('btnPrompt').onclick = () => copy(buildPrompt(), 'AI 改写 Prompt');
+document.getElementById('btnDownload').onclick = () => {
+  const blob = new Blob([buildMarkdown()], {type:'text/markdown;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `自我介绍-${getScene() ? getScene().cn : '未选场景'}.md`;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('已下载');
+};
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('pane-' + t.dataset.pane).classList.add('active');
+});
+document.getElementById('btnSample').onclick = () => {
+  Object.keys(SAMPLE.zh).forEach(i => state.zh[i] = SAMPLE.zh[i]);
+  Object.keys(SAMPLE.en).forEach(i => state.en[i] = SAMPLE.en[i]);
+  save(); renderQuiz();
+  toast('示例已载入：虚拟人物「周砚青」，仅作演示');
+  if(!state.scene) window.scrollTo({top:0, behavior:'smooth'});
+};
+document.getElementById('btnClear').onclick = () => {
+  if(!confirm('清空全部回答？此操作不可撤销。')) return;
+  state.zh = {}; state.en = {}; state.keep = [];
+  save(); renderQuiz();
+  document.getElementById('result').classList.remove('show');
+  toast('已清空');
+};
+
+/* ═══════════ 启动 ═══════════ */
+load();
+if(state.scene){
+  const b = document.querySelector(`.scene[data-id="${state.scene}"]`);
+  if(b) b.classList.add('on');
+}
+renderQuiz();
+document.addEventListener('keydown', e => {
+  if((e.metaKey || e.ctrlKey) && e.key === 'Enter'){ e.preventDefault(); render(); }
+});
+</script>
+</body>
+</html>
